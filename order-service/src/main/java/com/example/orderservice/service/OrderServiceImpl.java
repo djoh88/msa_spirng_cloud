@@ -3,6 +3,8 @@ package com.example.orderservice.service;
 import com.example.orderservice.dto.OrderDto;
 import com.example.orderservice.jpa.OrderEntity;
 import com.example.orderservice.jpa.OrderRepository;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,16 +23,28 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto createOrder(OrderDto orderDto) {
         orderDto.setOrderId(UUID.randomUUID().toString());
         orderDto.setTotalPrice(orderDto.getQty() * orderDto.getUnitPrice());
-        return null;
+
+        ModelMapper mapper = new ModelMapper();
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        OrderEntity orderEntity = mapper.map(orderDto, OrderEntity.class);
+
+        orderRepository.save(orderEntity);
+
+        OrderDto returnValue = mapper.map(orderEntity, OrderDto.class);
+
+        return returnValue;
     }
 
     @Override
     public OrderDto getOrderbyOrderId(String orderId) {
-        return null;
+        OrderEntity orderEntity = orderRepository.findByOrderId(orderId);
+        OrderDto orderDto = new ModelMapper().map(orderEntity, OrderDto.class);
+        return orderDto;
     }
 
     @Override
-    public Iterable<OrderEntity> getOrderByUserId(String userId) {
-        return null;
+    public Iterable<OrderEntity> getOrdersByUserId(String userId) {
+
+        return orderRepository.findByUserId(userId);
     }
 }
